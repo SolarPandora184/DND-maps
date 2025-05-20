@@ -38,6 +38,9 @@
     .sound-button:hover {
       background-color: #666;
     }
+    .playing {
+      background-color: #007acc !important;
+    }
     #stopBtn {
       margin-top: 30px;
       background-color: darkred;
@@ -61,7 +64,8 @@
     const audioUpload = document.getElementById('audioUpload');
     const buttonsContainer = document.getElementById('buttons');
     const player = document.getElementById('player');
-    let currentPlaying = null;
+    let currentPlayingButton = null;
+    let currentAudioSrc = null;
 
     audioUpload.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
@@ -78,11 +82,17 @@
       const btn = document.createElement('button');
       btn.className = 'sound-button';
       btn.textContent = name;
-      btn.onclick = () => playAudio(url);
+      btn.onclick = () => playAudio(url, btn);
       buttonsContainer.appendChild(btn);
     }
 
-    function playAudio(src) {
+    function playAudio(src, button) {
+      if (currentPlayingButton) {
+        currentPlayingButton.classList.remove('playing');
+      }
+      currentPlayingButton = button;
+      currentPlayingButton.classList.add('playing');
+      currentAudioSrc = src;
       player.src = src;
       player.play();
     }
@@ -90,7 +100,19 @@
     function stopAudio() {
       player.pause();
       player.currentTime = 0;
+      if (currentPlayingButton) {
+        currentPlayingButton.classList.remove('playing');
+        currentPlayingButton = null;
+      }
+      currentAudioSrc = null;
     }
+
+    player.addEventListener('ended', () => {
+      if (currentAudioSrc) {
+        player.src = currentAudioSrc;
+        player.play();
+      }
+    });
   </script>
 </body>
 </html>
