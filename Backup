@@ -66,12 +66,30 @@
     const player = document.getElementById('player');
     let currentPlayingButton = null;
     let currentAudioSrc = null;
+    let soundData = [];
+
+    // Load saved state
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('soundData');
+      if (saved) {
+        soundData = JSON.parse(saved);
+        soundData.forEach(({ name, fileData }) => {
+          const blob = new Blob([new Uint8Array(fileData.data)], { type: fileData.type });
+          const file = new File([blob], name, { type: fileData.type });
+          createSoundButton(name, file);
+        });
+      }
+    });
 
     audioUpload.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
       for (const file of files) {
         const name = prompt(`Enter a name for: ${file.name}`);
         if (name) {
+          const arrayBuffer = await file.arrayBuffer();
+          const fileData = { type: file.type, data: Array.from(new Uint8Array(arrayBuffer)) };
+          soundData.push({ name, fileData });
+          localStorage.setItem('soundData', JSON.stringify(soundData));
           createSoundButton(name, file);
         }
       }
