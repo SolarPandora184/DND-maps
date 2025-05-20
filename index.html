@@ -26,6 +26,11 @@
       justify-content: center;
       gap: 10px;
     }
+    .sound-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .sound-button {
       font-size: 18px;
       padding: 15px 30px;
@@ -38,12 +43,28 @@
     .sound-button:hover {
       background-color: #666;
     }
+    .delete-single {
+      margin-top: 5px;
+      background-color: #b00;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .delete-single:hover {
+      background-color: #d33;
+    }
     .playing {
       background-color: #007acc !important;
     }
     #stopBtn {
       margin-top: 30px;
       background-color: darkred;
+    }
+    #deleteBtn {
+      margin-top: 10px;
+      background-color: darkorange;
     }
   </style>
 </head>
@@ -57,6 +78,7 @@
 
   <div id="buttons"></div>
   <button class="sound-button" id="stopBtn" onclick="stopAudio()">Stop</button>
+  <button class="sound-button" id="deleteBtn" onclick="deleteAllSounds()">Delete All Sounds</button>
 
   <audio id="player"></audio>
 
@@ -97,11 +119,22 @@
 
     function createSoundButton(name, file) {
       const url = URL.createObjectURL(file);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'sound-wrapper';
+
       const btn = document.createElement('button');
       btn.className = 'sound-button';
       btn.textContent = name;
       btn.onclick = () => playAudio(url, btn);
-      buttonsContainer.appendChild(btn);
+
+      const del = document.createElement('button');
+      del.className = 'delete-single';
+      del.textContent = 'Delete';
+      del.onclick = () => deleteSingleSound(name, wrapper);
+
+      wrapper.appendChild(btn);
+      wrapper.appendChild(del);
+      buttonsContainer.appendChild(wrapper);
     }
 
     function playAudio(src, button) {
@@ -123,6 +156,30 @@
         currentPlayingButton = null;
       }
       currentAudioSrc = null;
+    }
+
+    function deleteAllSounds() {
+      const confirm1 = confirm("Are you sure you want to delete all saved sounds?");
+      if (confirm1) {
+        const confirm2 = confirm("This will permanently remove all saved sound files. Are you really sure?");
+        if (confirm2) {
+          localStorage.removeItem('soundData');
+          soundData = [];
+          buttonsContainer.innerHTML = '';
+          stopAudio();
+          alert("All sounds deleted.");
+        }
+      }
+    }
+
+    function deleteSingleSound(name, wrapperElement) {
+      const confirm1 = confirm(`Delete sound "${name}"?`);
+      if (!confirm1) return;
+
+      soundData = soundData.filter(item => item.name !== name);
+      localStorage.setItem('soundData', JSON.stringify(soundData));
+      buttonsContainer.removeChild(wrapperElement);
+      stopAudio();
     }
 
     player.addEventListener('ended', () => {
