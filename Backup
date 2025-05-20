@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D&D Soundboard</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #111;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #uploadSection {
+      margin-bottom: 30px;
+    }
+    input[type="file"], input[type="text"] {
+      margin: 5px;
+    }
+    #buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .sound-button {
+      font-size: 18px;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+    }
+    .sound-button:hover {
+      background-color: #666;
+    }
+    .playing {
+      background-color: #007acc !important;
+    }
+    #stopBtn {
+      margin-top: 30px;
+      background-color: darkred;
+    }
+  </style>
+</head>
+<body>
+  <h1>D&D Soundboard</h1>
+
+  <div id="uploadSection">
+    <input type="file" id="audioUpload" accept="audio/*" multiple>
+    <p>After uploading, you will be prompted to name each sound.</p>
+  </div>
+
+  <div id="buttons"></div>
+  <button class="sound-button" id="stopBtn" onclick="stopAudio()">Stop</button>
+
+  <audio id="player"></audio>
+
+  <script>
+    const audioUpload = document.getElementById('audioUpload');
+    const buttonsContainer = document.getElementById('buttons');
+    const player = document.getElementById('player');
+    let currentPlayingButton = null;
+    let currentAudioSrc = null;
+
+    audioUpload.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        const name = prompt(`Enter a name for: ${file.name}`);
+        if (name) {
+          createSoundButton(name, file);
+        }
+      }
+    });
+
+    function createSoundButton(name, file) {
+      const url = URL.createObjectURL(file);
+      const btn = document.createElement('button');
+      btn.className = 'sound-button';
+      btn.textContent = name;
+      btn.onclick = () => playAudio(url, btn);
+      buttonsContainer.appendChild(btn);
+    }
+
+    function playAudio(src, button) {
+      if (currentPlayingButton) {
+        currentPlayingButton.classList.remove('playing');
+      }
+      currentPlayingButton = button;
+      currentPlayingButton.classList.add('playing');
+      currentAudioSrc = src;
+      player.src = src;
+      player.play();
+    }
+
+    function stopAudio() {
+      player.pause();
+      player.currentTime = 0;
+      if (currentPlayingButton) {
+        currentPlayingButton.classList.remove('playing');
+        currentPlayingButton = null;
+      }
+      currentAudioSrc = null;
+    }
+
+    player.addEventListener('ended', () => {
+      if (currentAudioSrc) {
+        player.src = currentAudioSrc;
+        player.play();
+      }
+    });
+  </script>
+</body>
+</html>
