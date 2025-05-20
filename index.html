@@ -2,107 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>D&D Map + Audio Viewer</title>
+  <title>D&D Soundboard</title>
   <style>
     body {
       font-family: sans-serif;
-      text-align: center;
       background-color: #111;
       color: white;
+      text-align: center;
+      padding: 20px;
     }
-    img {
-      max-width: 100%;
-      max-height: 80vh;
-      border: 4px solid #444;
-      border-radius: 12px;
-      margin-top: 10px;
+    h1 {
+      margin-bottom: 20px;
     }
-    #controls, #fileInputs {
-      margin: 20px;
+    #uploadSection {
+      margin-bottom: 30px;
     }
-    button {
-      font-size: 16px;
+    input[type="file"], input[type="text"] {
       margin: 5px;
-      padding: 10px 20px;
+    }
+    #buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .sound-button {
+      font-size: 18px;
+      padding: 15px 30px;
       border: none;
       border-radius: 8px;
-      background-color: #333;
+      background-color: #444;
       color: white;
       cursor: pointer;
     }
-    input[type="file"] {
-      margin: 5px;
+    .sound-button:hover {
+      background-color: #666;
+    }
+    #stopBtn {
+      margin-top: 30px;
+      background-color: darkred;
     }
   </style>
 </head>
 <body>
-  <h1>D&D Map + Audio Viewer</h1>
+  <h1>D&D Soundboard</h1>
 
-  <div id="fileInputs">
-    <label>Upload Map Images:
-      <input type="file" id="mapUpload" multiple accept="image/*">
-    </label>
-    <br>
-    <label>Upload Audio Files:
-      <input type="file" id="audioUpload" multiple accept="audio/*">
-    </label>
+  <div id="uploadSection">
+    <input type="file" id="audioUpload" accept="audio/*" multiple>
+    <p>After uploading, you will be prompted to name each sound.</p>
   </div>
 
-  <div id="viewer">
-    <img id="mapImage" src="" alt="Your map will appear here">
-    <audio id="mapAudio" controls autoplay></audio>
-  </div>
+  <div id="buttons"></div>
+  <button class="sound-button" id="stopBtn" onclick="stopAudio()">Stop</button>
 
-  <div id="controls">
-    <button onclick="prevMap()">Previous</button>
-    <button onclick="nextMap()">Next</button>
-  </div>
+  <audio id="player"></audio>
 
   <script>
-    let mapFiles = [];
-    let audioFiles = [];
-    let currentIndex = 0;
+    const audioUpload = document.getElementById('audioUpload');
+    const buttonsContainer = document.getElementById('buttons');
+    const player = document.getElementById('player');
+    let currentPlaying = null;
 
-    document.getElementById('mapUpload').addEventListener('change', (e) => {
-      mapFiles = Array.from(e.target.files);
-      currentIndex = 0;
-      showMap();
+    audioUpload.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        const name = prompt(`Enter a name for: ${file.name}`);
+        if (name) {
+          createSoundButton(name, file);
+        }
+      }
     });
 
-    document.getElementById('audioUpload').addEventListener('change', (e) => {
-      audioFiles = Array.from(e.target.files);
-      currentIndex = 0;
-      showMap();
-    });
-
-    function showMap() {
-      const mapImg = document.getElementById('mapImage');
-      const mapAudio = document.getElementById('mapAudio');
-
-      if (mapFiles[currentIndex]) {
-        mapImg.src = URL.createObjectURL(mapFiles[currentIndex]);
-      } else {
-        mapImg.src = '';
-      }
-
-      if (audioFiles[currentIndex]) {
-        mapAudio.src = URL.createObjectURL(audioFiles[currentIndex]);
-        mapAudio.play();
-      } else {
-        mapAudio.src = '';
-      }
+    function createSoundButton(name, file) {
+      const url = URL.createObjectURL(file);
+      const btn = document.createElement('button');
+      btn.className = 'sound-button';
+      btn.textContent = name;
+      btn.onclick = () => playAudio(url);
+      buttonsContainer.appendChild(btn);
     }
 
-    function nextMap() {
-      if (mapFiles.length === 0) return;
-      currentIndex = (currentIndex + 1) % mapFiles.length;
-      showMap();
+    function playAudio(src) {
+      player.src = src;
+      player.play();
     }
 
-    function prevMap() {
-      if (mapFiles.length === 0) return;
-      currentIndex = (currentIndex - 1 + mapFiles.length) % mapFiles.length;
-      showMap();
+    function stopAudio() {
+      player.pause();
+      player.currentTime = 0;
     }
   </script>
 </body>
